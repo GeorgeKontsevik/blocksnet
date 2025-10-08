@@ -10,7 +10,7 @@ from blocksnet.enums import SettlementCategory
 from blocksnet.config import log_config
 from blocksnet.machine_learning.strategy import BaseStrategy, ClassificationBase
 from .utils import CATEGORY_KEY, preprocess_graph, calculate_graph_features
-from ._strategy import strategy
+from ._strategy import get_default_strategy
 
 CATEGORIES_LIST = list(SettlementCategory)
 
@@ -83,4 +83,4 @@ class NetworkClassifier(BaseContext):
 
     @classmethod
     def default(cls) -> "NetworkClassifier":
-        return cls(strategy)
+        return cls(get_default_strategy())
