@@ -46,24 +46,17 @@ version_scheme = "post-release"
 local_scheme = "no-local-version"
 
 [project.optional-dependencies]
-ml = [
-    "pygeoops",
-    "featuretools",
-    "torch",
-    "torch_geometric",
-    'catboost',
-    'xgboost',
-    'lightgbm'
-]
+ml = ["pygeoops", "featuretools", 'catboost', 'xgboost', 'lightgbm']
+torch = ["torch", "torch_geometric"]
 opt = ["optuna>=4.1.0,<5.0.0", "pymoo>=0.6.0,<1.0.0"]
-full = ["blocksnet[ml, opt]"]
+full = ["blocksnet[ml, torch, opt]"]
 
 ipynb = [
     "mapclassify==2.6.1",       #jupyter maps
     "matplotlib-inline==0.1.6", #jupyter plots
     "folium==0.14.0",           #jupyter maps
     "matplotlib>=3.9.0,<4.0.0",
-    "ipywidgets"
+    "ipywidgets",
 ]
 
 tests = ["pytest==7.4.3", "pytest-cov==4.1.0"]

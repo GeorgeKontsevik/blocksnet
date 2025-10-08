@@ -10,7 +10,7 @@ from blocksnet.enums import LandUseCategory, LandUse
 from blocksnet.machine_learning.context import BaseContext
 from blocksnet.machine_learning.strategy import BaseStrategy
 from ._strategy import get_default_strategy
-from .schemas import BlocksInputSchema
+from .schemas import BlocksTrainSchema, BlocksRunSchema
 from .preprocessing import DataProcessor
 
 
@@ -18,21 +18,23 @@ from .preprocessing import DataProcessor
 def str_to_land_use(lu_str: str) -> LandUse:
     """
     Convert a string to a LandUse enum value.
-    
+
     This function takes a string representing a land use type and converts it to the corresponding
     LandUse enum value. If the input is already a LandUse enum value, it is returned unchanged.
-    
+
     Args:
         lu_str (str): The string to be converted to a LandUse enum value.
-        
+
     Returns:
         LandUse: The corresponding LandUse enum value.
     """
     return LandUse(lu_str.lower()) if isinstance(lu_str, str) else lu_str
 
+
 # LandUse → LandUseCategory
 def land_use_to_category(lu: LandUse) -> LandUseCategory | None:
     return LandUseCategory.from_land_use(lu)
+
 
 def category_to_index(val) -> int | None:
     """Convert category (enum or str) to index."""
@@ -69,37 +71,39 @@ class SpatialClassifier(BaseContext):
         super().__init__(strategy=strategy)
 
         self.data_processor = DataProcessor(buffer_distance=buffer_distance, k_neighbors=k_neighbors)
-        self.feature_cols: list[str] | None = ['x_local',
-                                                'y_local',
-                                                'compactness',
-                                                'fractal_dimension',
-                                                'rectangularity_index',
-                                                'squareness_index',
-                                                'shape_index_log',
-                                                'mbr_area_log',
-                                                'mbr_aspect_ratio_log',
-                                                'solidity_log',
-                                                'asymmetry_x_log',
-                                                'asymmetry_y_log',
-                                                'nbr_mean_x_local',
-                                                'nbr_mean_y_local',
-                                                'nbr_mean_compactness',
-                                                'nbr_mean_fractal_dimension',
-                                                'nbr_mean_shape_index',
-                                                'nbr_mean_mbr_area',
-                                                'nbr_mean_rectangularity_index',
-                                                'nbr_mean_mbr_aspect_ratio',
-                                                'nbr_mean_squareness_index',
-                                                'nbr_mean_solidity',
-                                                'nbr_mean_asymmetry_x',
-                                                'nbr_mean_asymmetry_y',
-                                                'nbr_mean_shape_index_log',
-                                                'nbr_mean_mbr_area_log',
-                                                'nbr_mean_mbr_aspect_ratio_log',
-                                                'nbr_mean_solidity_log',
-                                                'nbr_mean_asymmetry_x_log',
-                                                'nbr_mean_asymmetry_y_log']
-        self.target_col = 'target_label'
+        self.feature_cols: list[str] | None = [
+            "x_local",
+            "y_local",
+            "compactness",
+            "fractal_dimension",
+            "rectangularity_index",
+            "squareness_index",
+            "shape_index_log",
+            "mbr_area_log",
+            "mbr_aspect_ratio_log",
+            "solidity_log",
+            "asymmetry_x_log",
+            "asymmetry_y_log",
+            "nbr_mean_x_local",
+            "nbr_mean_y_local",
+            "nbr_mean_compactness",
+            "nbr_mean_fractal_dimension",
+            "nbr_mean_shape_index",
+            "nbr_mean_mbr_area",
+            "nbr_mean_rectangularity_index",
+            "nbr_mean_mbr_aspect_ratio",
+            "nbr_mean_squareness_index",
+            "nbr_mean_solidity",
+            "nbr_mean_asymmetry_x",
+            "nbr_mean_asymmetry_y",
+            "nbr_mean_shape_index_log",
+            "nbr_mean_mbr_area_log",
+            "nbr_mean_mbr_aspect_ratio_log",
+            "nbr_mean_solidity_log",
+            "nbr_mean_asymmetry_x_log",
+            "nbr_mean_asymmetry_y_log",
+        ]
+        self.target_col = "target_label"
         self.is_fitted = False
         self.class_names_: list[LandUseCategory] | None = None
 
@@ -109,10 +113,9 @@ class SpatialClassifier(BaseContext):
     # ---------- auxiliary input normalization methods ----------
 
     @staticmethod
-    def _stack_city_list(city_gdfs: Iterable[gpd.GeoDataFrame],
-                         *,
-                         start: int = 0,
-                         name_fmt: str = "{:03d}") -> gpd.GeoDataFrame:
+    def _stack_city_list(
+        city_gdfs: Iterable[gpd.GeoDataFrame], *, start: int = 0, name_fmt: str = "{:03d}"
+    ) -> gpd.GeoDataFrame:
         """
         Merges a list of GeoDataFrames, adding 'city' column with numbering like '000','001',...
 
@@ -203,7 +206,7 @@ class SpatialClassifier(BaseContext):
                 raise ValueError(f"Failed to compute 'city_center' for cities: {bad}. Check geometry.")
         return out
 
-    def _normalize_input(self, data: gpd.GeoDataFrame | list | tuple) -> gpd.GeoDataFrame:
+    def _normalize_input(self, data: gpd.GeoDataFrame | list | tuple, train: bool) -> gpd.GeoDataFrame:
         """
         1) Validates input(s) using BlocksInputSchema (without additional checks).
         2) Adds/guarantees 'city' and 'city_center' columns.
@@ -219,11 +222,11 @@ class SpatialClassifier(BaseContext):
         """
         if isinstance(data, (list, tuple)):
             # validate EACH GDF
-            validated = [BlocksInputSchema(g) for g in data]
+            validated = [(BlocksTrainSchema(g) if train else BlocksRunSchema(g)) for g in data]
             merged = self._stack_city_list(validated, start=0, name_fmt="{:03d}")
             return self._ensure_city_and_center(merged)
         elif isinstance(data, gpd.GeoDataFrame):
-            g = BlocksInputSchema(data)          # validation
+            g = BlocksTrainSchema(data) if train else BlocksRunSchema(data)  # validation
             return self._ensure_city_and_center(g)
         else:
             raise TypeError("Expecting GeoDataFrame, list[GeoDataFrame] or tuple[GeoDataFrame].")
@@ -231,11 +234,7 @@ class SpatialClassifier(BaseContext):
     # ---------------------- L/U split ----------------------
 
     def split_l_u_per_city(
-        self,
-        gdf: gpd.GeoDataFrame,
-        target_col: str = 'category',
-        test_size: float = 0.2,
-        random_state: int = 42
+        self, gdf: gpd.GeoDataFrame, target_col: str = "category", test_size: float = 0.2, random_state: int = 42
     ) -> pd.Series:
         """
         Returns pd.Series (index=gdf.index) with values:
@@ -253,14 +252,14 @@ class SpatialClassifier(BaseContext):
         Returns:
             pd.Series: Series with split assignments
         """
-        if 'city' not in gdf.columns:
+        if "city" not in gdf.columns:
             gdf = gdf.assign(city="__one__")
 
-        assign = pd.Series('X', index=gdf.index, dtype=object)
+        assign = pd.Series("X", index=gdf.index, dtype=object)
         rng = np.random.default_rng(random_state)
         labeled_all = gdf.index[gdf[target_col].notna()]
 
-        for _, idx in gdf.groupby('city').indices.items():
+        for _, idx in gdf.groupby("city").indices.items():
             idx = pd.Index(idx)
 
             labeled_idx = idx.intersection(labeled_all)
@@ -278,8 +277,8 @@ class SpatialClassifier(BaseContext):
                 val_idx = pd.Index(rng.choice(labeled_idx.to_numpy(), size=n_val, replace=False))
                 train_idx = labeled_idx.difference(val_idx)
 
-            assign.loc[train_idx] = 'L'
-            assign.loc[val_idx]   = 'U'
+            assign.loc[train_idx] = "L"
+            assign.loc[val_idx] = "U"
 
         return assign
 
@@ -299,17 +298,17 @@ class SpatialClassifier(BaseContext):
             float: Training score
         """
         # 1) input validation and normalization (city + city_center)
-        train_gdf = self._normalize_input(train_gdf)
+        train_gdf = self._normalize_input(train_gdf, train=True)
 
         # 2) L/U labeling by cities
-        assign = self.split_l_u_per_city(train_gdf, target_col='category', test_size=0.2, random_state=42)
+        assign = self.split_l_u_per_city(train_gdf, target_col="category", test_size=0.2, random_state=42)
 
         # 3) preprocessing
         processed_train = self.data_processor.prepare_data(train_gdf)
         self.processed_train_for_context = processed_train
 
-        excluded_columns = ['geometry', 'category', 'city', 'city_center']
-        excluded_columns += getattr(self.data_processor, 'columns_to_log', [])
+        excluded_columns = ["geometry", "category", "city", "city_center"]
+        excluded_columns += getattr(self.data_processor, "columns_to_log", [])
         self.feature_cols = [c for c in processed_train.columns if c not in excluded_columns]
 
         processed_train[self.target_col] = processed_train["category"].map(category_to_index)
@@ -318,8 +317,8 @@ class SpatialClassifier(BaseContext):
 
         # align assign and processed_train
         assign = assign.reindex(processed_train.index)
-        is_L = (assign == 'L')
-        is_U = (assign == 'U')
+        is_L = assign == "L"
+        is_U = assign == "U"
 
         X_L = processed_train.loc[is_L, self.feature_cols].values
         y_L = processed_train.loc[is_L, self.target_col].values
@@ -347,7 +346,7 @@ class SpatialClassifier(BaseContext):
             gpd.GeoDataFrame: Processed data ready for prediction
         """
         # 1) validation (BlocksInputSchema) and adding city/city_center
-        gdf_norm = self._normalize_input(new_data)
+        gdf_norm = self._normalize_input(new_data, train=False)
 
         # 2) preprocessing (features); can pass context if needed
         processed_new = self.data_processor.prepare_data(gdf_norm)
@@ -357,7 +356,9 @@ class SpatialClassifier(BaseContext):
             for c in self.feature_cols:
                 if c not in processed_new.columns:
                     processed_new[c] = 0.0
-            processed_new = processed_new[self.feature_cols + [col for col in processed_new.columns if col not in self.feature_cols]]
+            processed_new = processed_new[
+                self.feature_cols + [col for col in processed_new.columns if col not in self.feature_cols]
+            ]
 
         return processed_new
 
@@ -446,17 +447,20 @@ class SpatialClassifier(BaseContext):
             probs = self.strategy.predict_proba(X)  # shape: (n, n_classes) in model.classes_ order
 
             # restore original GeoDataFrame (with 'city', 'city_center' after normalize)
-            gdf_norm = self._normalize_input(g).copy()
+            gdf_norm = self._normalize_input(g, train=False).copy()
 
             # labels and names
-            gdf_norm['pred_class'] = preds
-            gdf_norm['pred_name'] = [INDEX_TO_CATEGORY[c].value for c in preds]
+            gdf_norm["category"] = [INDEX_TO_CATEGORY[c] for c in preds]
+            gdf_norm["pred_class"] = preds
+            gdf_norm["pred_name"] = [INDEX_TO_CATEGORY[c].value for c in preds]
 
             # probabilities — strictly in self.classes_/self.class_names_ order
             for j, cls in enumerate(self.class_names_):
-                gdf_norm[f'prob_{cls.value}'] = probs[:, j] if probs.size else np.array([], dtype=float)
+                gdf_norm[f"prob_{cls.value}"] = probs[:, j] if probs.size else np.array([], dtype=float)
 
-            results.append(gdf_norm[['geometry','category','pred_name','prob_urban','prob_non_urban','prob_industrial']])
+            results.append(
+                gdf_norm[["geometry", "category", "pred_name", "prob_urban", "prob_non_urban", "prob_industrial"]]
+            )
 
         return results if was_list else results[0]
 
@@ -470,9 +474,7 @@ class SpatialClassifier(BaseContext):
         """
         return cls(get_default_strategy())
 
-    def save_mistakes(self, test_gdf: gpd.GeoDataFrame, 
-                      predictions: np.ndarray,
-                      filename: str) -> None:
+    def save_mistakes(self, test_gdf: gpd.GeoDataFrame, predictions: np.ndarray, filename: str) -> None:
         """
         Saves prediction mistakes to a GeoJSON file.
 
@@ -482,25 +484,24 @@ class SpatialClassifier(BaseContext):
             filename (str): Output file path
         """
         test_data = test_gdf.copy()
-        test_data['pred_class'] = predictions
-        test_data['pred_category'] = [self.class_names_[c].value for c in predictions]
+        test_data["pred_class"] = predictions
+        test_data["pred_category"] = [self.class_names_[c].value for c in predictions]
 
         actual_category = test_data["land_use"].map(str_to_land_use).map(land_use_to_category)
         actual_index = actual_category.map(CATEGORY_TO_INDEX)
-        test_data['true_category'] = actual_category
-        test_data['true_category_name'] = actual_category.map(lambda c: c.value if c else "unknown")
+        test_data["true_category"] = actual_category
+        test_data["true_category_name"] = actual_category.map(lambda c: c.value if c else "unknown")
 
-        mistakes = test_data[actual_index != test_data['pred_class']]
-        mistakes['mismatch'] = mistakes.apply(
+        mistakes = test_data[actual_index != test_data["pred_class"]]
+        mistakes["mismatch"] = mistakes.apply(
             lambda row: f"{row['true_category_name']} -> {row['pred_category']}", axis=1
         )
 
         self._save_geojson(mistakes, filename)
 
-    def save_predictions_to_geojson(self, gdf: gpd.GeoDataFrame, 
-                                    predictions: np.ndarray,
-                                    probabilities: np.ndarray,
-                                    filename: str) -> None:
+    def save_predictions_to_geojson(
+        self, gdf: gpd.GeoDataFrame, predictions: np.ndarray, probabilities: np.ndarray, filename: str
+    ) -> None:
         """
         Saves predictions with probabilities to a GeoJSON file.
 
@@ -511,12 +512,12 @@ class SpatialClassifier(BaseContext):
             filename (str): Output file path
         """
         result = gdf.copy()
-        result['pred_class'] = predictions
-        result['pred_category'] = [INDEX_TO_CATEGORY[i].value for i in predictions]
-        
+        result["pred_class"] = predictions
+        result["pred_category"] = [INDEX_TO_CATEGORY[i].value for i in predictions]
+
         for i, cls in enumerate(self.class_names_ or []):
-            result[f'prob_{cls.value}'] = probabilities[:, i]
-        
+            result[f"prob_{cls.value}"] = probabilities[:, i]
+
         self._save_geojson(result.round(4), filename)
 
     def _save_geojson(self, gdf: gpd.GeoDataFrame, filename: str) -> None:
@@ -533,20 +534,20 @@ class SpatialClassifier(BaseContext):
         try:
             filepath = Path(filename)
             os.makedirs(filepath.parent, exist_ok=True)
-            
+
             save_gdf = gdf.copy()
-            geom_cols = [col for col in save_gdf.columns if save_gdf[col].dtype == 'geometry']
-            
+            geom_cols = [col for col in save_gdf.columns if save_gdf[col].dtype == "geometry"]
+
             if len(geom_cols) > 1:
                 main_geom = geom_cols[0]
                 for col in geom_cols[1:]:
-                    save_gdf[col + '_wkt'] = save_gdf[col].to_wkt()
+                    save_gdf[col + "_wkt"] = save_gdf[col].to_wkt()
                     save_gdf = save_gdf.drop(columns=[col])
-            
+
             for col in save_gdf.columns:
-                if save_gdf[col].dtype == 'object' and col != save_gdf.geometry.name:
+                if save_gdf[col].dtype == "object" and col != save_gdf.geometry.name:
                     save_gdf[col] = save_gdf[col].astype(str)
-            
-            save_gdf.to_file(filename, driver='GeoJSON', encoding='utf-8')
+
+            save_gdf.to_file(filename, driver="GeoJSON", encoding="utf-8")
         except Exception as e:
             raise RuntimeError(f"Error saving {filename}: {str(e)}") from e
