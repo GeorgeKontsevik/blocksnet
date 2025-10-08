@@ -75,9 +75,10 @@ pip install blocksnet
 
 There are various extras to install:
 
-- `ml` - machine learning related packages (`torch`, `catboost`, etc).
+- `ml` - machine learning related packages (`catboost`, `lightgmb` etc).
+- `torch` - torch related packages (`torch`, `torch_geometric`).
 - `opt` - optimization problem related packages (`optuna`, `pymoo`).
-- `full` - all packages required by blocksnet methods (`ml` + `opt` extras).
+- `full` - all packages required by blocksnet methods (`ml` + `torch` + `opt` extras).
 - `ipynb` - jupyter notebook visualization packages (`matplotlib`, etc).
 - `tests` (DEVELOPMENT ONLY) - pytest related packages.
 - `docs` (DEVELOPMENT ONLY) - sphinx documentation related packages.
@@ -162,7 +163,7 @@ The repository includes the following directories and modules:
   - [`blocks`](blocksnet/blocks) - methods to generate, aggregate and process urban blocks.
   - [`config`](blocksnet/config) - config to handle logging and meta information (service types, land use relations, etc).
   - [`enums`](blocksnet/enums) - enums used within the code base.
-  - [`machine_learning`](blocksnet/machine_learning) - machine learning strategies for different packages. Requires `ml` extra (`pip install blocksnet[ml]`).
+  - [`machine_learning`](blocksnet/machine_learning) - machine learning strategies for different packages. Requires `ml` and `torch` (optional) extras (`pip install blocksnet[ml,torch]`).
   - [`optimization`](blocksnet/optimization) - optimization related methods. Requires the `opt` extra (`pip install blocksnet[opt]`).
   - [`preprocessing`](blocksnet/preprocessing) - data imputing and preprocessing.
   - [`relations`](blocksnet/relations) - methods to handle network graphs and accessibility matrices.
