@@ -12,6 +12,20 @@ any major contributions.
 
 At first please see the [Get started](../get_started/index.md) section of the documentation to setup the environment.
 
+## How to
+
+If you are a collaborator:
+
+- Make a new branch with `feat/`, `fix/` or `refactor/` prefix. For example: `fix/blocks_cutting`.
+- After changes make a PR to develop. Please, don't work on the same branch after the changes are merged.
+- Make sure that there are no merge conflicts. If there are some, please, merge the `develop` into your branch first.
+
+If you are not a collaborator:
+
+- Make a fork from `develop` branch.
+- After changes, make a PR to from `your:develop` to `blocksnet:develop`.
+- Make sure that there are no merge conflicts. If there are some, please, merge the `develop` into your branch first.
+
 ## Before submitting your pull request
 
 Before you submit a pull request for your contribution, please work

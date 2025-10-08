@@ -127,7 +127,7 @@ For more detailed use cases please see our [examples](examples).
 
 ## Data
 
-Before running the examples, one can use the data from the [blocksnet-data](tests/data) repository releases and place it in the
+Before running the examples, one can use the data from the [blocksnet-data](https://github.com/IDUclub/blocksnet-data/releases) repository releases and place it in the
 `examples/data` directory, for example:
 
 ```
