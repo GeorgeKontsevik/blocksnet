@@ -4,7 +4,7 @@ from loguru import logger
 from tqdm import tqdm
 from pulp import PULP_CBC_CMD, LpMaximize, LpProblem, LpVariable, lpSum, LpInteger
 from blocksnet.relations import validate_accessibility_matrix
-from blocksnet.config import log_config
+import math
 from .schemas import BlocksSchema
 
 POPULATION_COLUMN = "population"
@@ -35,7 +35,7 @@ def _initialize_provision_df(blocks_df: pd.DataFrame, demand: int | None):
             raise ValueError(f"No {POPULATION_COLUMN} in columns")
         if demand is None:
             raise ValueError(f"Cant impute demand without known normative demand")
-        blocks_df["demand"] = blocks_df.population.apply(lambda p: round(p / 1000 * demand))
+        blocks_df["demand"] = blocks_df.population.apply(lambda p: math.ceil(p / 1000 * demand))
 
     blocks_df = BlocksSchema(blocks_df)
 
