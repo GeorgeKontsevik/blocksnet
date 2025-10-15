@@ -1,6 +1,8 @@
 import pandas as pd
 from .indicator import EngineeringIndicator
 from blocksnet.analysis.services import services_count
+from ..utils import get_unique_parents
+from ..const import TOTAL_COLUMN
 
 SKIP_INDICATORS = [
     EngineeringIndicator.NON_GASIFIED_SETTLEMENTS,
@@ -8,8 +10,7 @@ SKIP_INDICATORS = [
 ]
 
 
-def calculate_engineering_indicators(blocks_df: pd.DataFrame) -> dict[EngineeringIndicator, int]:
-
+def _calculate_engineering_indicators(blocks_df: pd.DataFrame) -> dict[EngineeringIndicator, int]:
     blocks_df = services_count(blocks_df)
 
     count_indicators = [ind for ind in EngineeringIndicator if ind not in SKIP_INDICATORS]
@@ -23,10 +24,22 @@ def calculate_engineering_indicators(blocks_df: pd.DataFrame) -> dict[Engineerin
     result = {}
     for indicator in count_indicators:
         column = f"count_{indicator.meta.name}"
-        count = blocks_df[column].sum()
-        result[indicator] = int(count)
+        if column in blocks_df.columns:
+            count = blocks_df[column].sum()
+            result[indicator] = int(count)
 
     count = sum(result.values())
     result[EngineeringIndicator.INFRASTRUCTURE_OBJECT] = count
 
     return result
+
+
+def calculate_engineering_indicators(blocks_df: pd.DataFrame) -> pd.DataFrame:
+    parents = get_unique_parents(blocks_df)
+
+    indicators = {}
+    for parent in parents:
+        indicators[parent] = _calculate_engineering_indicators(blocks_df[blocks_df.parent == parent])
+    indicators[TOTAL_COLUMN] = _calculate_engineering_indicators(blocks_df)
+
+    return pd.DataFrame.from_dict(indicators)

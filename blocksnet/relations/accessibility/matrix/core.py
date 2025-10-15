@@ -33,3 +33,16 @@ def get_accessibility_context(
     mask = (acc_mx <= accessibility).any(axis=1)
     blocks_ids = list(acc_mx[mask].index)
     return accessibility_matrix.loc[blocks_ids, blocks_ids].copy()
+
+
+def filter_accessibility_context(
+    blocks_df: pd.DataFrame,
+    accessibility_matrix: pd.DataFrame,
+    blocks_ids: list[int],
+    **kwargs,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    context_mx = get_accessibility_context(
+        accessibility_matrix=accessibility_matrix, blocks_df=blocks_df.loc[blocks_ids], **kwargs
+    )
+    context_ids = list(context_mx.index)
+    return blocks_df.loc[context_ids].copy(), context_mx

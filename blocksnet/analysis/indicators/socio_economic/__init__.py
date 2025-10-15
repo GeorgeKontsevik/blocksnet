@@ -7,5 +7,4 @@ from .transport import *
 from .economic import *
 from .ecological import *
 from .engineering import *
-from .social_count import *
-from .social_provision import *
+from .social import *

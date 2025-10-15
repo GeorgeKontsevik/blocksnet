@@ -4,7 +4,7 @@ from ..indicator_meta import IndicatorMeta
 
 
 @unique
-class SocialCountIndicator(IndicatorEnum):
+class SocialIndicator(IndicatorEnum):
     # education
     KINDERGARTEN = IndicatorMeta("kindergarten")
     SCHOOL = IndicatorMeta("school")
@@ -29,7 +29,7 @@ class SocialCountIndicator(IndicatorEnum):
 
     # social
     ORPHANAGE = IndicatorMeta("orphanage")
-    NURSING_HOME = IndicatorMeta("nursing_home")
+    SOCIAL_FACILITY = IndicatorMeta("social_facility")
     SOCIAL_SERVICE_CENTER = IndicatorMeta("social_service_center")
 
     # service
@@ -58,4 +58,4 @@ class SocialCountIndicator(IndicatorEnum):
     HOTEL = IndicatorMeta("hotel")
     HOSTEL = IndicatorMeta("hostel")
     TOURIST_BASE = IndicatorMeta("tourist_base")
-    CATERING = IndicatorMeta("cafe")
+    CATERING = IndicatorMeta("catering")

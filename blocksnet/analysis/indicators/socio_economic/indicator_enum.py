@@ -12,3 +12,6 @@ class IndicatorEnum(Enum):
         if self.meta.unit is not None:
             repr = f"{repr} ({self.meta.unit})"
         return repr
+
+    def __str__(self):
+        return self.__repr__()

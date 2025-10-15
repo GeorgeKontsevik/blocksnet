@@ -17,7 +17,7 @@ def services_count(blocks_df: pd.DataFrame):
     for column in columns:
         df = blocks_df[[column]].rename(columns={column: COUNT_COLUMN})
         dfs[column] = BlocksServicesSchema(df)
-    df = pd.concat(dfs.values(), axis=1)
+    df = pd.concat(dfs.values(), axis=1).copy()
     df.columns = list(dfs.keys())
     df[COUNT_COLUMN] = df.sum(axis=1)
     return df

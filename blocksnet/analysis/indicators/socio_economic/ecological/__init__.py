@@ -1,1 +1,1 @@
-from .ecological_indicator import EcologicalIndicator
+from .indicator import EcologicalIndicator

@@ -151,14 +151,24 @@ def _distribute_demand(
 def provision_strong_total(blocks_df: pd.DataFrame):
     demand_within = blocks_df[DEMAND_WITHIN_COLUMN].sum()
     demand = blocks_df.demand.sum()
-    return float(demand_within / demand)
+    if demand > 0:
+        return float(demand_within / demand)
+    capacity = blocks_df.capacity.sum()
+    if capacity > 0:
+        return 1.0
+    return 0.0
 
 
 def provision_weak_total(blocks_df: pd.DataFrame):
     demand_within = blocks_df[DEMAND_WITHIN_COLUMN].sum()
     demand_without = blocks_df[DEMAND_WITHOUT_COLUMN].sum()
     demand = blocks_df.demand.sum()
-    return float((demand_within + demand_without) / demand)
+    if demand > 0:
+        return float((demand_within + demand_without) / demand)
+    capacity = blocks_df.capacity.sum()
+    if capacity > 0:
+        return 1.0
+    return 0.0
 
 
 def competitive_provision(

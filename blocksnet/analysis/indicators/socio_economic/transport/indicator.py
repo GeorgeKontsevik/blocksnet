@@ -27,15 +27,19 @@ class TransportIndicator(IndicatorEnum):
     )
 
     # airports
-    INTERNATIONAL_AIRPORTS_COUNT = IndicatorMeta("international_airports_count")
-    AVERAGE_INTERNATIONAL_AIRPORT_ACCESSIBILITY = IndicatorMeta(
-        "average_international_airport_accessibility", aggregatable=False, unit="min"
-    )
 
-    REGIONAL_AIRPORTS_COUNT = IndicatorMeta("regional_airports_count")
-    AVERAGE_REGIONAL_AIRPORT_ACCESSIBILITY = IndicatorMeta(
-        "average_regional_airport_accessibility", aggregatable=False, unit="min"
-    )
+    AIRPORTS_COUNT = IndicatorMeta("airports_count")
+    AVERAGE_AIRPORT_ACCESSIBILITY = IndicatorMeta("average_airport_accessibility", aggregatable=False, unit="min")
+
+    # INTERNATIONAL_AIRPORTS_COUNT = IndicatorMeta("international_airports_count")
+    # AVERAGE_INTERNATIONAL_AIRPORT_ACCESSIBILITY = IndicatorMeta(
+    #     "average_international_airport_accessibility", aggregatable=False, unit="min"
+    # )
+
+    # REGIONAL_AIRPORTS_COUNT = IndicatorMeta("regional_airports_count")
+    # AVERAGE_REGIONAL_AIRPORT_ACCESSIBILITY = IndicatorMeta(
+    #     "average_regional_airport_accessibility", aggregatable=False, unit="min"
+    # )
 
     # ports
     PORTS_COUNT = IndicatorMeta("ports_count")

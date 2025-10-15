@@ -809,7 +809,7 @@
   {
     "code": "3.2.2",
     "name": "social_facility",
-    "name_ru": "дом для инвалидов и престарелых/ детский дом",
+    "name_ru": "дом для инвалидов и престарелых / детский дом",
     "demand": 2,
     "accessibility": 60,
     "land_use": ["residential"],
@@ -1054,7 +1054,7 @@
   },
   {
     "code": "6.6",
-    "name": "constraction",
+    "name": "construction",
     "name_ru": "объекты строительной промышленности",
     "demand": 1,
     "accessibility": 60,
@@ -1092,7 +1092,7 @@
   },
   {
     "code": "1.15",
-    "name": "agriculture_services",
+    "name": "agricultural_services",
     "name_ru": "объекты сельскохозяйственных сервисов",
     "demand": 1,
     "accessibility": 60,
