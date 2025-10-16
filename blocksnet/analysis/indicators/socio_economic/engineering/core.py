@@ -14,12 +14,12 @@ def _calculate_engineering_indicators(blocks_df: pd.DataFrame) -> dict[Engineeri
     blocks_df = services_count(blocks_df)
 
     count_indicators = [ind for ind in EngineeringIndicator if ind not in SKIP_INDICATORS]
-    count_columns = [f"count_{ind.meta.name}" for ind in count_indicators]
-    missing_columns = set(set(count_columns)).difference(blocks_df.columns)
+    # count_columns = [f"count_{ind.meta.name}" for ind in count_indicators]
+    # missing_columns = set(set(count_columns)).difference(blocks_df.columns)
 
-    if len(missing_columns) > 0:
-        missing_str = str.join(", ", missing_columns)
-        raise RuntimeError(f"Missing columns: {missing_str}")
+    # if len(missing_columns) > 0:
+    #     missing_str = str.join(", ", missing_columns)
+    #     raise RuntimeError(f"Missing columns: {missing_str}")
 
     result = {}
     for indicator in count_indicators:
@@ -27,8 +27,11 @@ def _calculate_engineering_indicators(blocks_df: pd.DataFrame) -> dict[Engineeri
         if column in blocks_df.columns:
             count = blocks_df[column].sum()
             result[indicator] = int(count)
+        else:
+            result[indicator] = None
 
-    count = sum(result.values())
+    counts = [r for r in result.values() if r is not None]
+    count = sum(counts) if len(counts) > 0 else None
     result[EngineeringIndicator.INFRASTRUCTURE_OBJECT] = count
 
     return result

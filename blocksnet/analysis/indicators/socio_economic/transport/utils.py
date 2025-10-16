@@ -12,9 +12,13 @@ def calculate_area(blocks_gdf: gpd.GeoDataFrame) -> float:
 
 
 def calculate_length(blocks_gdf: gpd.GeoDataFrame, roads_gdf: gpd.GeoDataFrame) -> float:
+    from shapely import intersection
+
     blocks_gdf = BlocksSchema(blocks_gdf)
-    roads_gdf = roads_gdf.to_crs(blocks_gdf.crs).clip(blocks_gdf)
-    return float(roads_gdf.length.sum() / M_IN_KM)
+    blocks_geom = blocks_gdf.buffer(1).union_all()
+    roads_geom = roads_gdf.to_crs(blocks_gdf.crs).union_all()
+    intersection_geom = intersection(roads_geom, blocks_geom)
+    return float(intersection_geom.length / M_IN_KM)
 
 
 def calculate_connectivity(blocks_gdf: gpd.GeoDataFrame, accessibility_matrix: pd.DataFrame) -> float:

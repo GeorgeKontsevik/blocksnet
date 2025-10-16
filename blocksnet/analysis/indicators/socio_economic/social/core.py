@@ -1,9 +1,11 @@
+import numpy as np
 import pandas as pd
-from .indicator import SocialIndicator, SocialCountIndicator, SocialProvisionIndicator
-from loguru import logger
+from .indicator import SocialIndicator
 from tqdm import tqdm
+from .schemas import ServiceTypesSchema
 from .provision import calculate_provision
 from .count import calculate_count
+from .utils import cast_social_indicator
 from ..utils import get_unique_parents
 from ..const import TOTAL_COLUMN
 from blocksnet.config import log_config
@@ -11,56 +13,60 @@ from blocksnet.analysis.services import services_count
 from blocksnet.analysis.provision import provision_strong_total
 
 
-def _calculate_social_indicators(
+def _calculate_count(
     counts_df: pd.DataFrame,
-    prov_df: pd.DataFrame | None,
     indicator: SocialIndicator,
+    service_types_df: pd.DataFrame | None,
     blocks_ids: list[int] | None = None,
-) -> tuple[float | None, float | None]:
+) -> float | None:
     if blocks_ids is not None:
         counts_df = counts_df.loc[blocks_ids]
-        if prov_df is not None:
-            prov_df = prov_df.loc[blocks_ids]
-
-    count = calculate_count(counts_df, indicator)
-    if prov_df is not None:
-        prov = provision_strong_total(prov_df)
-    else:
-        prov = None
-
-    return count, prov
+    return calculate_count(counts_df, indicator, service_types_df)
 
 
-def _cast_social_indicator(indicator: SocialIndicator) -> tuple:
+def _calculate_provision(prov_dfs: list[pd.DataFrame], blocks_ids: list[int] | None = None) -> float | None:
+    if blocks_ids is not None:
+        prov_dfs = [df.loc[blocks_ids] for df in prov_dfs]
 
-    from typing import cast
+    if len(prov_dfs) == 0:
+        return None
+    totals = [provision_strong_total(df) for df in prov_dfs]
+    return float(np.mean(totals))
 
-    name = indicator.name
-    return SocialCountIndicator[name], SocialProvisionIndicator[name]
 
+def calculate_social_indicators(
+    blocks_df: pd.DataFrame,
+    acc_mx: pd.DataFrame,
+    dist_mx: pd.DataFrame | None,
+    service_types_df: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
 
-def calculate_social_indicators(blocks_df: pd.DataFrame, acc_mx: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     parents = get_unique_parents(blocks_df)
-
     counts_df = services_count(blocks_df)
+    if service_types_df is not None:
+        service_types_df = ServiceTypesSchema(service_types_df)
 
     count_indicators = {p: {} for p in [*parents, TOTAL_COLUMN]}
-    provision_indicators = {p: {} for p in [*parents, TOTAL_COLUMN]}
+    prov_indicators = {p: {} for p in [*parents, TOTAL_COLUMN]}
 
     for indicator in tqdm(list(SocialIndicator), disable=log_config.disable_tqdm):
-        prov_df = calculate_provision(blocks_df, acc_mx, indicator)
+        prov_dfs = calculate_provision(blocks_df, acc_mx, indicator, dist_mx, service_types_df)
 
-        count_indicator, provision_indicator = _cast_social_indicator(indicator)
+        count_indicator, prov_indicator = cast_social_indicator(indicator)
 
         for parent in parents:
             blocks_ids = blocks_df[blocks_df.parent == parent].index.to_list()
-            count, prov = _calculate_social_indicators(counts_df, prov_df, indicator, blocks_ids)
 
+            count = _calculate_count(counts_df, indicator, service_types_df, blocks_ids)
             count_indicators[parent][count_indicator] = count
-            provision_indicators[parent][provision_indicator] = prov
 
-        count, prov = _calculate_social_indicators(counts_df, prov_df, indicator)
+            prov = _calculate_provision(prov_dfs, blocks_ids)
+            prov_indicators[parent][prov_indicator] = prov
+
+        count = calculate_count(counts_df, indicator, service_types_df)
         count_indicators[TOTAL_COLUMN][count_indicator] = count
-        provision_indicators[TOTAL_COLUMN][provision_indicator] = prov
 
-    return (pd.DataFrame.from_dict(count_indicators), pd.DataFrame.from_dict(provision_indicators))
+        prov = _calculate_provision(prov_dfs)
+        prov_indicators[TOTAL_COLUMN][prov_indicator] = prov
+
+    return (pd.DataFrame.from_dict(count_indicators), pd.DataFrame.from_dict(prov_indicators))
