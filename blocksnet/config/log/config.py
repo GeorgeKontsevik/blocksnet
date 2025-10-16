@@ -1,7 +1,6 @@
 import sys
 from tqdm import tqdm
 from loguru import logger
-from iduedu import config as iduedu_config
 
 LOGGER_LEVELS = {"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"}
 
@@ -25,6 +24,9 @@ class LogConfig:
         logger.add(sys.stderr, level=level)
 
     def set_disable_tqdm(self, disable: bool):
+
+        from iduedu import config as iduedu_config
+
         self.disable_tqdm = disable
         iduedu_config.set_enable_tqdm(not disable)
 

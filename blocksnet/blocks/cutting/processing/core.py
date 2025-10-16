@@ -3,7 +3,6 @@ from loguru import logger
 from blocksnet.utils.validation import ensure_crs
 from .schemas import validate_and_preprocess_gdfs
 from .cut import cut_blocks
-from .split import split_blocks
 from blocksnet.blocks.classification import BlocksClassifier
 
 
@@ -27,6 +26,9 @@ def cut_urban_blocks(
     logger.success(f"{len(blocks_gdf)} blocks are successfully cut")
 
     if classifier is not None:
+
+        from .split import split_blocks
+
         blocks_gdf = split_blocks(blocks_gdf, lines_gdf, polygons_gdf, buildings_gdf, classifier)
 
     return gpd.GeoDataFrame(blocks_gdf.reset_index(drop=True)[["geometry"]])
