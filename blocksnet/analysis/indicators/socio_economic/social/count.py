@@ -1,6 +1,5 @@
 import pandas as pd
 from .indicator import SocialIndicator
-from loguru import logger
 
 
 def calculate_count(count_df: pd.DataFrame, indicator: SocialIndicator) -> float | None:
@@ -11,5 +10,4 @@ def calculate_count(count_df: pd.DataFrame, indicator: SocialIndicator) -> float
         count = count_df[column].sum()
         return int(count)
 
-    # logger.warning(f"{column} is missing. The indicator is skipped")
     return None

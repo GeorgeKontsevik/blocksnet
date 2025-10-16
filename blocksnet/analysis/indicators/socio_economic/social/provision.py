@@ -1,5 +1,4 @@
 import pandas as pd
-from loguru import logger
 from .indicator import SocialIndicator
 from blocksnet.analysis.provision import competitive_provision
 from blocksnet.config import log_config, service_types_config
@@ -12,12 +11,10 @@ def calculate_provision(
     name = indicator.meta.name
 
     if not name in service_types_config:
-        # logger.warning(f"{name} not found in config. The indicator is skipped")
         return None
 
     column = f"capacity_{indicator.meta.name}"
     if not column in blocks_df.columns:
-        # logger.warning(f"{column} is missing. The indicator is skipped")
         return None
 
     disable_tqdm = log_config.disable_tqdm

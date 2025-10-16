@@ -59,3 +59,13 @@ class SocialIndicator(IndicatorEnum):
     HOSTEL = IndicatorMeta("hostel")
     TOURIST_BASE = IndicatorMeta("tourist_base")
     CATERING = IndicatorMeta("catering")
+
+
+SocialCountIndicator = IndicatorEnum(
+    "SocialCountIndicator",
+    {e.name: e.value for e in SocialIndicator},
+)
+SocialProvisionIndicator = IndicatorEnum(
+    "SocialProvisionIndicator",
+    {e.name: e.value for e in SocialIndicator},
+)
