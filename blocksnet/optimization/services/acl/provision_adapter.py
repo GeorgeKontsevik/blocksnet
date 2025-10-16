@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from blocksnet.analysis.provision import competitive_provision, provision_strong_total
-from blocksnet.analysis.provision.competivive.core import CAPACITY_LEFT_COLUMN, DEMAND_LEFT_COLUMN, DEMAND_WITHIN_COLUMN
+from blocksnet.analysis.provision.competitive.core import CAPACITY_LEFT_COLUMN, DEMAND_LEFT_COLUMN, DEMAND_WITHIN_COLUMN
 from blocksnet.config import log_config, service_types_config
 from blocksnet.enums import LandUse
 from blocksnet.optimization.services.common import ServicesContainer

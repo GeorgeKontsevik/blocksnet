@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from blocksnet.analysis.provision.competivive.core import DEMAND_LEFT_COLUMN
+from blocksnet.analysis.provision.competitive.core import DEMAND_LEFT_COLUMN
 from blocksnet.config.service_types.config import service_types_config
 from blocksnet.optimization.services.common.variable import Variable
 

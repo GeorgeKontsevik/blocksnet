@@ -1,2 +1,2 @@
-from .competivive import *
+from .competitive import *
 from .shared import *
