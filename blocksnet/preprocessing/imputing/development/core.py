@@ -19,15 +19,19 @@ Y_COLUMN = "y"
 class DevelopmentImputer(BaseContext):
     def _preprocess_geometries(self, blocks_gdf: gpd.GeoDataFrame) -> pd.DataFrame:
         gdf = BlocksSchema(blocks_gdf)
-        gdf["site_area"] = gdf.length
-        gdf["site_length"] = gdf.length
-        gdf["x"] = gdf.centroid.x
-        gdf["y"] = gdf.centroid.y
+
+        site_area = gdf.area
+        gdf["site_area_log"] = np.log1p(site_area)
+
+        centroid = gdf.centroid.union_all().centroid
+        x0, y0 = centroid.x, centroid.y
+        x = gdf.centroid.x - x0
+        y = gdf.centroid.y - y0
+
+        gdf["x_normalized"] = x / (x.std() + 1e-8)
+        gdf["y_normalized"] = y / (y.std() + 1e-8)
         # gdf['distance_to_center'] = np.sqrt(gdf['x']**2 + gdf['y']**2)
-        gdf["x_normalized"] = gdf["x"] / (gdf["x"].std() + 1e-8)
-        gdf["y_normalized"] = gdf["y"] / (gdf["y"].std() + 1e-8)
-        gdf["site_length_log"] = np.log1p(gdf["site_length"])
-        gdf["site_length_squared"] = gdf["site_length"] ** 2
+
         return gdf.drop(columns=["geometry"])
 
     def _preprocess_land_use(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
@@ -45,6 +49,8 @@ class DevelopmentImputer(BaseContext):
 
     def _preprocess_indicators(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
         blocks_df = BlocksIndicatorsSchema(blocks_df)
+        for column in blocks_df.columns:
+            blocks_df[column] = np.log1p(blocks_df[column])
         return blocks_df
 
     def _preprocess_y(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
@@ -64,6 +70,8 @@ class DevelopmentImputer(BaseContext):
 
     def _postprocess_y(self, y: np.ndarray, index: list[int]) -> pd.DataFrame:
         df = pd.DataFrame(y, index=index, columns=BlocksIndicatorsSchema.columns_())
+        for column in df.columns:
+            df[column] = np.expm1(df[column])
         return df
 
     def _split_data(self, x: np.ndarray, split_params: dict) -> tuple[np.ndarray, np.ndarray]:
