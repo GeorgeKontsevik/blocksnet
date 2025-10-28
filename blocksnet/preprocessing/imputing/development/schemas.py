@@ -31,6 +31,7 @@ class BlocksLandUseSchema(DfSchema):
 
 
 class BlocksIndicatorsSchema(DfSchema):
-    build_floor_area: Series[float] = Field(ge=0)
-    footprint_area: Series[float] = Field(ge=0)
+    l: Series[float] = Field(ge=0)
+    # build_floor_area: Series[float] = Field(ge=0)
+    # footprint_area: Series[float] = Field(ge=0)
     # living_area: Series[float] = Field(ge=0)

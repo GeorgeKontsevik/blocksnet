@@ -21,23 +21,23 @@ class DevelopmentImputer(BaseContext):
         gdf = BlocksSchema(blocks_gdf)
 
         site_area = gdf.area
-        gdf["site_area"] = site_area
+        # gdf["site_area"] = site_area
 
         centroid = gdf.centroid.union_all().centroid
         x0, y0 = centroid.x, centroid.y
         x = gdf.centroid.x - x0
         y = gdf.centroid.y - y0
 
-        gdf["x"] = x  # / (x.std() + 1e-8)
-        gdf["y"] = y  # / (y.std() + 1e-8)
-        gdf["distance_to_center"] = np.sqrt(gdf["x"] ** 2 + gdf["y"] ** 2)
+        gdf["x"] = x.std() + 1e-8
+        gdf["y"] = y.std() + 1e-8
+        # gdf["distance_to_center"] = np.sqrt(gdf["x"] ** 2 + gdf["y"] ** 2)
 
         return gdf.drop(columns=["geometry"])
 
     def _preprocess_land_use(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
         df = BlocksLandUseSchema(blocks_df)
         lu_columns = BlocksLandUseSchema.columns_()
-        df["lu_diversity"] = df[lu_columns].sum(axis=1)
+        # df["lu_diversity"] = df[lu_columns].sum(axis=1)
         # df['is_mixed_use'] = (df[lu_columns].sum(axis=1) > 1).astype(int)
         return df
 
@@ -110,7 +110,9 @@ class DevelopmentImputer(BaseContext):
         edge_index = self._preprocess_edge_index(adjacency_graph, blocks_gdf)
 
         split_params = split_params or {"train_size": 0.8, "random_state": 42}
-        train_mask, test_mask = self._spatial_split(distances=x[:, 3], train_ratio=0.8)  # _split_data(x, split_params)
+        train_mask, test_mask = self._split_data(
+            x, split_params
+        )  # _spatial_split(distances=x[:, 3], train_ratio=0.8)  #
 
         train_params = train_params or {
             "epochs": 1000,
