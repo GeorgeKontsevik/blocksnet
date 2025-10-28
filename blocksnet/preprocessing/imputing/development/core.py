@@ -21,23 +21,23 @@ class DevelopmentImputer(BaseContext):
         gdf = BlocksSchema(blocks_gdf)
 
         site_area = gdf.area
-        gdf["site_area_log"] = np.log1p(site_area)
+        gdf["site_area"] = site_area
 
         centroid = gdf.centroid.union_all().centroid
         x0, y0 = centroid.x, centroid.y
         x = gdf.centroid.x - x0
         y = gdf.centroid.y - y0
 
-        gdf["x_normalized"] = x / (x.std() + 1e-8)
-        gdf["y_normalized"] = y / (y.std() + 1e-8)
-        # gdf['distance_to_center'] = np.sqrt(gdf['x']**2 + gdf['y']**2)
+        gdf["x"] = x  # / (x.std() + 1e-8)
+        gdf["y"] = y  # / (y.std() + 1e-8)
+        gdf["distance_to_center"] = np.sqrt(gdf["x"] ** 2 + gdf["y"] ** 2)
 
         return gdf.drop(columns=["geometry"])
 
     def _preprocess_land_use(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
         df = BlocksLandUseSchema(blocks_df)
-        # lu_columns = BlocksLandUseSchema.columns_()
-        # df['lu_diversity'] = df[lu_columns].sum(axis=1)
+        lu_columns = BlocksLandUseSchema.columns_()
+        df["lu_diversity"] = df[lu_columns].sum(axis=1)
         # df['is_mixed_use'] = (df[lu_columns].sum(axis=1) > 1).astype(int)
         return df
 
@@ -49,8 +49,6 @@ class DevelopmentImputer(BaseContext):
 
     def _preprocess_indicators(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
         blocks_df = BlocksIndicatorsSchema(blocks_df)
-        for column in blocks_df.columns:
-            blocks_df[column] = np.log1p(blocks_df[column])
         return blocks_df
 
     def _preprocess_y(self, blocks_df: pd.DataFrame) -> pd.DataFrame:
@@ -70,9 +68,23 @@ class DevelopmentImputer(BaseContext):
 
     def _postprocess_y(self, y: np.ndarray, index: list[int]) -> pd.DataFrame:
         df = pd.DataFrame(y, index=index, columns=BlocksIndicatorsSchema.columns_())
-        for column in df.columns:
-            df[column] = np.expm1(df[column])
         return df
+
+    def _spatial_split(self, distances: np.ndarray, train_ratio: float) -> tuple[np.ndarray, np.ndarray]:
+        # сортировка по distance
+        sorted_idx = np.argsort(distances)
+        n_train = int(len(distances) * train_ratio)
+
+        # попеременный выбор: берем через один
+        train_idx = sorted_idx[:: int(1 / train_ratio)][:n_train]
+        test_idx = np.setdiff1d(sorted_idx, train_idx)
+
+        train_mask = np.zeros(len(distances), dtype=bool)
+        test_mask = np.zeros(len(distances), dtype=bool)
+        train_mask[train_idx] = True
+        test_mask[test_idx] = True
+
+        return train_mask, test_mask
 
     def _split_data(self, x: np.ndarray, split_params: dict) -> tuple[np.ndarray, np.ndarray]:
         size = len(x)
@@ -98,7 +110,7 @@ class DevelopmentImputer(BaseContext):
         edge_index = self._preprocess_edge_index(adjacency_graph, blocks_gdf)
 
         split_params = split_params or {"train_size": 0.8, "random_state": 42}
-        train_mask, test_mask = self._split_data(x, split_params)
+        train_mask, test_mask = self._spatial_split(distances=x[:, 3], train_ratio=0.8)  # _split_data(x, split_params)
 
         train_params = train_params or {
             "epochs": 1000,

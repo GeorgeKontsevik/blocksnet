@@ -186,7 +186,7 @@ class TorchGraphImputationStrategy(_TorchGraphImputationStrategy):
         n_nodes, n_targets = targets.shape
         imputation_mask = torch.zeros_like(targets, dtype=torch.bool, device=self.device)
 
-        missing_rate = np.random.uniform(0.1, 0.5)
+        missing_rate = np.random.uniform(0.1, 0.4)
         for i in range(n_targets):
             missing_nodes = torch.randperm(n_nodes)[: int(n_nodes * missing_rate)]
             imputation_mask[missing_nodes, i] = True
