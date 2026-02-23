@@ -10,29 +10,29 @@ authors = [
 ]
 description = "Package provides methods of master plan requirements automated generation for urban areas"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { file = "LICENCE.md" }
 
 dependencies = [
-    "geopandas>=0.13.0,<1.0.0",
+    "geopandas>=1.0.0,<2.0.0",
     "loguru>=0.7.0,<1.0.0",
-    "matplotlib==3.7.1",
+    "matplotlib>=3.9.0,<4.0.0",
     "networkit>=11.0,<12.0",
     "networkx>=3.1,<4.0",
-    "numpy==1.23.5",
+    "numpy>=2.0.0,<3.0.0",
     "osmnx>=1.6.0,<2.0.0",
-    "pandas>=2.0.0,<3.0.0",
+    "pandas>=2.2.2,<3.0.0",
     "pandera==0.20.2",
     "PuLP==2.7.0",
-    "pyarrow==12.0.0",
+    "pyarrow>=19.0.0,<20.0.0",
     "pydantic>=2.0.0,<3.0.0",
-    "scikit-learn==1.2.2",
+    "scikit-learn>=1.4.2,<2.0.0",
     "scipy>=1.10.1,<2.0.0",
-    "shapely==2.0.1",
-    "tqdm>=4.65.0,<5.0.0",
+    "shapely>=2.0.6,<3.0.0",
+    "tqdm>=4.66.0,<5.0.0",
     "voronoi-diagram-for-polygons==0.1.6",
-    "momepy==0.7.0",
-    "iduedu==0.1.2",
+    "momepy==0.8.0",
+    "iduedu>=1.0.0,<2.0.0",
 ]
 
 classifiers = [
@@ -61,7 +61,7 @@ dev = [
     "pytest==7.4.3",
     "pytest-cov==4.1.0",
     "build",
-    "twine"
+    "twine",
 ]
 docs = [
     "docutils>=0.18.1,<0.19",
