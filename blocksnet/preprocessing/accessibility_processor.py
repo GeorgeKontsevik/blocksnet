@@ -7,7 +7,7 @@ import osmnx as ox
 import pandas as pd
 from shapely import MultiPolygon, Polygon
 from ..models import BaseSchema
-from iduedu import get_adj_matrix_gdf_to_gdf, get_intermodal_graph
+import iduedu as ie
 
 IDUEDU_CRS = 4326
 
@@ -147,8 +147,12 @@ class AccessibilityProcessor:
         nx.Graph
             NetworkX graph representing the intermodal transportation network.
         """
-        graph = get_intermodal_graph(
-            polygon=self.polygon, clip_by_bounds=clip_by_bounds, keep_routes_geom=keep_routes_geom
+        pt_kwargs = {"transport_types": ["subway", "trolleybus", "bus", "tram"]}
+        graph = ie.get_intermodal_graph(
+            territory=self.blocks.to_crs(IDUEDU_CRS),
+            clip_by_territory=clip_by_bounds,
+            keep_edge_geometry=keep_routes_geom,
+            pt_kwargs=pt_kwargs,
         )
         self._fix_graph(graph)
         return graph
@@ -171,5 +175,5 @@ class AccessibilityProcessor:
         """
         gdf = self.blocks.copy()
         gdf.geometry = gdf.representative_point()
-        acc_mx = get_adj_matrix_gdf_to_gdf(gdf, gdf, graph, weight)
+        acc_mx = ie.get_adj_matrix_gdf_to_gdf(gdf, gdf, graph, weight)
         return acc_mx
