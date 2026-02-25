@@ -146,6 +146,82 @@ def origin_destination_matrix(
     accessibility: float = DEFAULT_ACCESSIBILITY,
     lu_consts: dict[LandUse, float] = LU_CONSTS,
 ) -> pd.DataFrame:
+    
+    """
+    Build an origin-constrained OD matrix from block attributes and accessibility matrices.
+
+    The function estimates an integer-valued origin-destination (OD) matrix between network nodes
+    using an origin-constrained gravity model. Trip productions are derived from block population
+    (after distributing blocks to nearby nodes), while trip attractions are proportional to a
+    composite attractiveness score based on service density, service diversity (Shannon index),
+    and a land-use constant.
+
+    Parameters
+    ----------
+    blocks_df : pandas.DataFrame
+        Table of blocks (zones). Index must uniquely identify blocks and must match
+        ``blocks_to_nodes_mx.index``. Required columns are validated/coerced by ``BlocksSchema``.
+        Expected fields include at least:
+        - ``population`` (number of people living in block, a field mapped to :data:`POPULATION_COLUMN`)
+        - ``land_use`` (type of land use for urban block, values of :class:`blocksnet.enums.LandUse`)
+        - ``site_area`` (used for service density)
+    blocks_to_nodes_mx : pandas.DataFrame
+        Block-to-node generalized cost matrix (e.g., walk time), with blocks on rows and network
+        nodes on columns. Used to distribute each block's population/attractiveness across nearby
+        nodes. Its index must match ``blocks_df.index``.
+    nodes_to_nodes_mx : pandas.DataFrame
+        Node-to-node generalized cost matrix (e.g., travel time). Must be square with identical
+        index/columns, and its index must match ``blocks_to_nodes_mx.columns``.
+        Zeros are treated as missing costs for the gravity model.
+    services_count_dfs : list[pandas.DataFrame]
+        List of service-count tables (typically one per service category/type) used to compute
+        Shannon diversity and total service counts per block. Each table must be compatible with
+        :func:`blocksnet.analysis.diversity.shannon.core.shannon_diversity`.
+    accessibility : float, default=DEFAULT_ACCESSIBILITY
+        Threshold on ``blocks_to_nodes_mx`` costs defining which nodes are considered reachable
+        from a block for distribution. For each block, nodes with cost ``<= accessibility`` are
+        considered; additionally, the nearest node is always included to avoid empty supports.
+    lu_consts : dict[LandUse, float], default=LU_CONSTS
+        Mapping from land-use type to an additive attractiveness constant. If a block land-use is
+        missing in the mapping, :data:`DEFAULT_LU_CONST` is used.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Integer OD matrix between network nodes. Index and columns correspond to
+        ``nodes_to_nodes_mx.index``. Row sums are equal to the corresponding origin node population
+        (rounded to integers and clipped at zero). Total trips equal the total distributed
+        population (after rounding).
+
+    Notes
+    -----
+    - This is an *origin-constrained* model: productions (row sums) are fixed by origin population,
+      while attractions (column sums) are not explicitly constrained.
+    - Blocks are not OD zones directly: block attributes are first distributed to network nodes
+      via inverse-cost weights derived from ``blocks_to_nodes_mx``. The OD matrix is then computed
+      between nodes.
+    - If an origin node has no valid outgoing gravity weights (e.g., all costs missing), its demand
+      is assigned as intrazonal flow (diagonal element).
+    - Integerization preserves each origin row sum exactly using largest-remainder rounding.
+
+    Raises
+    ------
+    ValueError
+        If indices/columns of the input matrices are inconsistent (do not align), or if the block
+        table does not satisfy the expected schema after validation.
+
+    Examples
+    --------
+    >>> od_nodes = origin_destination_matrix(
+    ...     blocks_df=blocks,
+    ...     blocks_to_nodes_mx=blocks_to_nodes,
+    ...     nodes_to_nodes_mx=nodes_to_nodes,
+    ...     services_count_dfs=[shops_counts, schools_counts],
+    ...     accessibility=10.0,
+    ... )
+    >>> od_nodes.shape
+    (len(nodes_to_nodes.index), len(nodes_to_nodes.index))
+    """
 
     blocks_df = BlocksSchema(blocks_df)
     _validate_input(blocks_df, blocks_to_nodes_mx, nodes_to_nodes_mx)
