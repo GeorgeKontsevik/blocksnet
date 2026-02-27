@@ -1240,7 +1240,7 @@ class City:
         # spatial join blocks and buildings and updated related blocks info
         logger.info("Joining buildings and blocks")
         sjoin = gdf.sjoin(self.get_blocks_gdf()[["geometry"]])
-        sjoin = sjoin.rename(columns={"index_right": "block_id"})
+        sjoin = sjoin.rename(columns={"id_right": "block_id"})
         sjoin.geometry = sjoin.geometry.apply(
             lambda g: g.buffer(0) if g.geom_type in ["Polygon", "MultiPolygon"] else g
         )
@@ -1293,7 +1293,7 @@ class City:
         # spatial join buildings and services and update related blocks info
         buildings_gdf = self.get_buildings_gdf()
         building_services = gdf.sjoin(buildings_gdf[["geometry", "block_id"]])
-        building_services = building_services.rename(columns={"index_right": "building_id"})
+        building_services = building_services.rename(columns={"id_right": "building_id"})
         building_services.geometry = building_services.geometry.apply(
             lambda g: g.buffer(0) if g.geom_type in ["Polygon", "MultiPolygon"] else g
         )
@@ -1313,7 +1313,7 @@ class City:
         blocks_gdf = self.get_blocks_gdf()
         block_services = gdf.loc[~gdf.index.isin(building_services.index)]
         block_services = block_services.sjoin(blocks_gdf[["geometry"]])
-        block_services = block_services.rename(columns={"index_right": "block_id"})
+        block_services = block_services.rename(columns={"id_right": "block_id"})
         block_services.geometry = block_services.geometry.apply(
             lambda g: g.buffer(0) if g.geom_type in ["Polygon", "MultiPolygon"] else g
         )
