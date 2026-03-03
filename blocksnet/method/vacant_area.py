@@ -317,16 +317,16 @@ class VacantArea(BaseMethod):
         occupied_areas = [
             buildings_gdf,
             services_gdf,
-            self._dwn_other(blocks_buffer),
-            self._dwn_landuse(blocks_buffer),
-            self._dwn_natural(blocks_buffer),
-            self._dwn_waterway(blocks_buffer),
-            self._dwn_highway(blocks_buffer),
-            self._dwn_railway(blocks_buffer),
-            self._dwn_path(blocks_buffer),
-            self._dwn_leisure(blocks_buffer),
-            self._dwn_amenity(blocks_buffer),
-            self._dwn_buildings(blocks_buffer),
+            # self._dwn_other(blocks_buffer),
+            # self._dwn_landuse(blocks_buffer),
+            # self._dwn_natural(blocks_buffer),
+            # self._dwn_waterway(blocks_buffer),
+            # self._dwn_highway(blocks_buffer),
+            # self._dwn_railway(blocks_buffer),
+            # self._dwn_path(blocks_buffer),
+            # self._dwn_leisure(blocks_buffer),
+            # self._dwn_amenity(blocks_buffer),
+            # self._dwn_buildings(blocks_buffer),
         ]
         occupied_area = pd.concat(occupied_areas)[["geometry"]]
         occupied_area = occupied_area.loc[occupied_area.geom_type.isin(["Polygon", "MultiPolygon"])]
