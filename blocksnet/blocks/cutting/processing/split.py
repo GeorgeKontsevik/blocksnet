@@ -110,7 +110,7 @@ def split_blocks(
     split_gdfs = []
     disable_tqdm = log_config.disable_tqdm
     logger_level = log_config.logger_level
-    for i in tqdm(candidates_gdf.index, disable_tqdm=disable_tqdm):
+    for i in tqdm(candidates_gdf.index, **log_config.get_tqdm_kwargs()):
         log_config.set_disable_tqdm(True)
         log_config.set_logger_level("ERROR")
 

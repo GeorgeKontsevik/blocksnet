@@ -173,7 +173,7 @@ def competitive_provision(
 
     links = []
     logger.info("Setting and solving LP problems until max depth or break condition reached")
-    for depth in tqdm(range(1, max_depth + 1), disable=log_config.disable_tqdm):
+    for depth in tqdm(range(1, max_depth + 1), **log_config.get_tqdm_kwargs()):
         blocks_df, depth_links = _distribute_demand(blocks_df, accessibility_matrix, accessibility, depth)
         links.extend(depth_links)
         break_condition = blocks_df[DEMAND_LEFT_COLUMN].sum() == 0 or blocks_df[CAPACITY_LEFT_COLUMN].sum() == 0

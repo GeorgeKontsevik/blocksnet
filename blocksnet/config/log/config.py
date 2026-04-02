@@ -31,5 +31,14 @@ class LogConfig:
         self.disable_tqdm = disable
         iduedu_config.set_enable_tqdm(not disable)
 
+    def get_tqdm_kwargs(self, *, leave: bool = False):
+        return {
+            "disable": self.disable_tqdm or (not sys.stderr.isatty()),
+            "leave": leave,
+            "ascii": True,
+            "dynamic_ncols": True,
+            "mininterval": 0.5,
+        }
+
 
 log_config = LogConfig()
