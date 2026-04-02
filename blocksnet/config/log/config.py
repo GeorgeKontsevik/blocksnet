@@ -4,6 +4,7 @@ from loguru import logger
 from iduedu import config as iduedu_config
 
 LOGGER_LEVELS = {"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"}
+LOGGER_FORMAT = "<green>{time:DD MMM HH:mm}</green> | <level>{level}</level> | <level>{message}</level>"
 
 tqdm.pandas()
 
@@ -16,13 +17,15 @@ class LogConfig:
     ):
         self.disable_tqdm = disable_tqdm
         self.logger_level = logger_level
+        logger.remove()
+        logger.add(sys.stderr, level=logger_level, format=LOGGER_FORMAT, colorize=True)
 
     def set_logger_level(self, level: str):
         if not level in LOGGER_LEVELS:
             raise ValueError(f"Logger should be in {LOGGER_LEVELS}")
         logger.remove()
         self.logger_level = level
-        logger.add(sys.stderr, level=level)
+        logger.add(sys.stderr, level=level, format=LOGGER_FORMAT, colorize=True)
 
     def set_disable_tqdm(self, disable: bool):
         self.disable_tqdm = disable
