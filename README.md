@@ -1,19 +1,21 @@
 # blocksnet
 
-Urban blocks, accessibility, provision, and service-placement library.
+Urban analytics library for blocks, accessibility, service provision, and placement scenarios. In the dissertation workspace it is the main reusable spatial-analysis engine.
 
-## Scheme
+## System Map
 
 ```mermaid
 flowchart LR
-    A[Inputs] --> B[Run: examples/pipeline.ipynb]
-    B --> C[Checked outputs]
-    C --> D[Paper / thesis use]
+    CITY[city blocks + buildings] --> MODEL[BlocksNet city model]
+    SERVICES[service points + norms] --> MODEL
+    MODEL --> ACCESS[accessibility / provision]
+    ACCESS --> SCENARIO[service-placement scenario]
+    SCENARIO --> REPORT[maps + metrics]
 ```
 
 ## Main Result
 
-![Main result](docs/img/blocksnet.png)
+![BlocksNet overview](docs/img/blocksnet.png)
 
 ## Run
 
@@ -25,14 +27,12 @@ Human:
 pip install -e . && jupyter notebook examples/pipeline.ipynb
 ```
 
-Agent:
-
-Prefer existing BlocksNet APIs over custom geometry/service helpers.
+Agent: reuse BlocksNet APIs before writing geometry/service helpers in the parent pipeline.
 
 ## Publication
 
-Library documentation: https://aimclub.github.io/blocksnet/
+Documentation: https://aimclub.github.io/blocksnet/
 
 ## Next Steps / Heuristics
 
-Keep wrappers thin; add new abstractions only when they remove duplicated pipeline code.
+Heuristic: keep wrappers thin. Add abstractions only when they remove duplicated pipeline code or expose a stable analytical operation.
