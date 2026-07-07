@@ -1,5 +1,7 @@
 # blocksnet
 
+[![OSA-improved](https://img.shields.io/badge/improved%20by-OSA-yellow)](https://github.com/aimclub/OSA)
+
 Urban analytics library for blocks, accessibility, service provision, and placement scenarios. In the dissertation workspace it is the main reusable spatial-analysis engine.
 
 ## System Map
@@ -36,3 +38,4 @@ Documentation: https://aimclub.github.io/blocksnet/
 ## Next Steps / Heuristics
 
 Heuristic: keep wrappers thin. Add abstractions only when they remove duplicated pipeline code or expose a stable analytical operation.
+
